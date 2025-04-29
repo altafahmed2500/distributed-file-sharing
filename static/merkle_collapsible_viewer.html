@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Merkle Tree Viewer (Collapsible)</title>
+  <style>
+    .node {
+      margin-left: 20px;
+      font-family: monospace;
+      cursor: pointer;
+    }
+    .collapsed > .children {
+      display: none;
+    }
+    .node:hover {
+      color: darkcyan;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Merkle Tree Viewer 🌳 (Collapsible)</h2>
+
+<input type="text" id="fileName" placeholder="Enter file name..." />
+<button onclick="loadTree()">Load Tree</button>
+
+<div id="treeView"></div>
+
+<script>
+  async function loadTree() {
+    const fileName = document.getElementById("fileName").value;
+    const res = await fetch(`http://localhost:8080/merkle/${fileName}`);
+    if (!res.ok) {
+      alert("File not found or error occurred");
+      return;
+    }
+    const tree = await res.json();
+    const treeView = document.getElementById("treeView");
+    treeView.innerHTML = "";
+    drawTree(tree, treeView);
+  }
+
+  function drawTree(node, container) {
+    if (!node) return;
+
+    const nodeDiv = document.createElement("div");
+    nodeDiv.className = "node";
+    nodeDiv.innerText = shortHash(node.hash);
+
+    const childrenContainer = document.createElement("div");
+    childrenContainer.className = "children";
+
+    if (node.left || node.right) {
+      if (node.left) drawTree(node.left, childrenContainer);
+      if (node.right) drawTree(node.right, childrenContainer);
+
+      nodeDiv.appendChild(childrenContainer);
+
+      // Start collapsed
+      nodeDiv.classList.add("collapsed");
+
+      // Toggle collapse on click
+      nodeDiv.addEventListener("click", function(e) {
+        e.stopPropagation(); // Don't trigger parent toggles
+        nodeDiv.classList.toggle("collapsed");
+      });
+    }
+
+    container.appendChild(nodeDiv);
+  }
+
+  function shortHash(hash) {
+    if (!hash) return "";
+    return hash.substring(0, 8) + "...";
+  }
+</script>
+
+</body>
+</html>

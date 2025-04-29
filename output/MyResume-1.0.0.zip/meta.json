@@ -1,0 +1,71 @@
+{
+  "fileName": "MyResume-1.0.0.zip",
+  "rootHash": "eb2a6006cc58f1cf5345b0fc2da5fff0b66d0c19180a935a9d9718244cc6c611",
+  "chunks": [
+    {
+      "index": 0,
+      "hash": "f9f60f6d1bc7cfcedcbec26563476968fac7ba2985c29ba4b692a3a5a7bc77f9",
+      "size": 262144
+    },
+    {
+      "index": 1,
+      "hash": "5f3fe1bc45d9ca22d09e15377e731cda0425a9f1a9c53551899198cf433c19fb",
+      "size": 262144
+    },
+    {
+      "index": 2,
+      "hash": "6748bd00ab158845a3d6151132284c6d29eb5add6d0049b9ced8161f6620bdd5",
+      "size": 262144
+    },
+    {
+      "index": 3,
+      "hash": "c6c24122a88c066608c65129552dc4cce4a05ba41d115a40d5241b11cbd46a29",
+      "size": 262144
+    },
+    {
+      "index": 4,
+      "hash": "796b16f7312e42cc1088e7a3a4008f9c47089a7ac912a5fa123ad59a12f97557",
+      "size": 262144
+    },
+    {
+      "index": 5,
+      "hash": "df16da650ffaf95ec2a38341e40d78504639aa4e1ec04907670fe18010d12e2a",
+      "size": 262144
+    },
+    {
+      "index": 6,
+      "hash": "6ec8734f305a2c8c6729a368afc6585b6e000cbd7abb8594d7aab357d4a4225f",
+      "size": 262144
+    },
+    {
+      "index": 7,
+      "hash": "38b73395ba397fb9c3482997aa1cd9078fd0fcc9323b218fcb16e4dd8311221c",
+      "size": 262144
+    },
+    {
+      "index": 8,
+      "hash": "bf886fb6585e6667375ef31748f13dbc295e35884b6677b745e8633a99c2c296",
+      "size": 262144
+    },
+    {
+      "index": 9,
+      "hash": "9a6c76f31bf233d602fb2e42961e110ca961f6fc9801b65f54db99846796bda7",
+      "size": 262144
+    },
+    {
+      "index": 10,
+      "hash": "1c92ac689268fd491fc3c0f8610d53f3f25c3e37844af27bb839c3f3340def45",
+      "size": 262144
+    },
+    {
+      "index": 11,
+      "hash": "560e9097a2496ea3d09438cc13e64f6889ef88c1ab51c6bc0ca44c57dccc15dc",
+      "size": 262144
+    },
+    {
+      "index": 12,
+      "hash": "afd81dadd73f555997b6ad256b6d41169eb7fabd6fec3edb806137b31264b422",
+      "size": 59720
+    }
+  ]
+}

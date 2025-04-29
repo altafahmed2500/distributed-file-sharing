@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Merkle Tree Viewer</title>
+    <style>
+        .node {
+            margin-left: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Merkle Tree Viewer</h2>
+
+<input type="text" id="fileName" placeholder="Enter file name..." />
+<button onclick="loadTree()">Load Tree</button>
+
+<div id="treeView"></div>
+
+<script>
+    async function loadTree() {
+        const fileName = document.getElementById("fileName").value;
+        const res = await fetch(`http://localhost:8080/merkle/${fileName}`);
+        if (!res.ok) {
+            alert("File not found or error occurred");
+            return;
+        }
+        const tree = await res.json();
+        const treeView = document.getElementById("treeView");
+        treeView.innerHTML = "";
+        drawTree(tree, treeView);
+    }
+
+    function drawTree(node, container) {
+        if (!node) return;
+
+        const div = document.createElement("div");
+        div.className = "node";
+        div.innerText = shortHash(node.hash);
+        container.appendChild(div);
+
+        if (node.left || node.right) {
+            if (node.left) drawTree(node.left, div);
+            if (node.right) drawTree(node.right, div);
+        }
+    }
+
+    function shortHash(hash) {
+        return hash.substring(0, 8) + "...";
+    }
+</script>
+
+</body>
+</html>

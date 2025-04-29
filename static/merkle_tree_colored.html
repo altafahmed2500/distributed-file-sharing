@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Merkle Tree Visualization (Treant.js)</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css" />
+  <style>
+    .node {
+      border: 1px solid #ccc;
+      padding: 5px;
+      border-radius: 5px;
+      font-family: monospace;
+      background-color: #f9f9f9;
+    }
+    .root-node { background-color: #ffcccc; } /* red */
+    .left-node { background-color: #cce5ff; } /* blue */
+    .right-node { background-color: #ccffcc; } /* green */
+  </style>
+</head>
+<body>
+
+<h2>Merkle Tree Visualization 🌳 (Treant.js)</h2>
+<div id="tree-simple" style="width: 100%; height: 800px;"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.min.js"></script>
+
+<script>
+  const treeData = {
+    chart: {
+      container: "#tree-simple",
+      nodeAlign: "TOP",
+      connectors: { type: "straight" },
+      levelSeparation: 50,
+      siblingSeparation: 30,
+      subTeeSeparation: 30
+    },
+    nodeStructure: {
+      text: { name: "94d357a6..." }, HTMLclass: "root-node",
+      children: [
+        {
+          text: { name: "fa09921a..." }, HTMLclass: "left-node",
+          children: [
+            {
+              text: { name: "a8459976..." }, HTMLclass: "left-node",
+              children: [
+                {
+                  text: { name: "29797fd7..." }, HTMLclass: "left-node",
+                  children: [
+                    { text: { name: "f9f60f6d..." }, HTMLclass: "left-node" },
+                    { text: { name: "5f3fe1bc..." }, HTMLclass: "right-node" }
+                  ]
+                },
+                {
+                  text: { name: "912f379b..." }, HTMLclass: "right-node",
+                  children: [
+                    { text: { name: "6748bd00..." }, HTMLclass: "left-node" },
+                    { text: { name: "c6c24122..." }, HTMLclass: "right-node" }
+                  ]
+                }
+              ]
+            },
+            {
+              text: { name: "92ae1b4a..." }, HTMLclass: "right-node",
+              children: [
+                {
+                  text: { name: "ae70d675..." }, HTMLclass: "left-node",
+                  children: [
+                    { text: { name: "796b16f7..." }, HTMLclass: "left-node" },
+                    { text: { name: "df16da65..." }, HTMLclass: "right-node" }
+                  ]
+                },
+                {
+                  text: { name: "eb7cd7c3..." }, HTMLclass: "right-node",
+                  children: [
+                    { text: { name: "6ec8734f..." }, HTMLclass: "left-node" },
+                    { text: { name: "38b73395..." }, HTMLclass: "right-node" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          text: { name: "8bf023d6..." }, HTMLclass: "right-node",
+          children: [
+            {
+              text: { name: "70156cb6..." }, HTMLclass: "left-node",
+              children: [
+                {
+                  text: { name: "24e8d8df..." }, HTMLclass: "left-node",
+                  children: [
+                    { text: { name: "bf886fb6..." }, HTMLclass: "left-node" },
+                    { text: { name: "9a6c76f3..." }, HTMLclass: "right-node" }
+                  ]
+                },
+                {
+                  text: { name: "0ae26e05..." }, HTMLclass: "right-node",
+                  children: [
+                    { text: { name: "1c92ac68..." }, HTMLclass: "left-node" },
+                    { text: { name: "560e9097..." }, HTMLclass: "right-node" }
+                  ]
+                }
+              ]
+            },
+            {
+              text: { name: "afd81dad..." }, HTMLclass: "right-node"
+            }
+          ]
+        }
+      ]
+    }
+  };
+
+  new Treant(treeData);
+</script>
+
+</body>
+</html>
