@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,21 +16,54 @@ type ChunkMap struct {
 	Chunks   map[string]string `json:"Chunks"`
 }
 
+type MetaChunk struct {
+	Index int    `json:"index"`
+	Hash  string `json:"hash"`
+	Size  int    `json:"size"`
+}
+
+type FileMeta struct {
+	FileName string      `json:"fileName"`
+	RootHash string      `json:"rootHash"`
+	Chunks   []MetaChunk `json:"chunks"`
+}
+
 func main() {
-	chunkMapPath := "chunk_maps/MyResume-1.0.0.zip_chunkmap.json" // <-- Change filename here if needed
+	chunkMapPath := "chunk_maps/MyResume-1.0.0.zip_chunkmap.json" // <-- your chunk map
+	metaPath := "output/MyResume-1.0.0.zip/meta.json"             // <-- your meta.json
 
 	// Read chunk map
-	data, err := os.ReadFile(chunkMapPath)
+	chunkMapData, err := os.ReadFile(chunkMapPath)
 	if err != nil {
 		fmt.Println("❌ Failed to read chunk map:", err)
 		return
 	}
 
 	var cmap ChunkMap
-	err = json.Unmarshal(data, &cmap)
+	err = json.Unmarshal(chunkMapData, &cmap)
 	if err != nil {
 		fmt.Println("❌ Failed to parse chunk map:", err)
 		return
+	}
+
+	// Read meta.json
+	metaData, err := os.ReadFile(metaPath)
+	if err != nil {
+		fmt.Println("❌ Failed to read meta.json:", err)
+		return
+	}
+
+	var meta FileMeta
+	err = json.Unmarshal(metaData, &meta)
+	if err != nil {
+		fmt.Println("❌ Failed to parse meta.json:", err)
+		return
+	}
+
+	// Build lookup map for chunk hash
+	metaHashes := make(map[int]string)
+	for _, chunk := range meta.Chunks {
+		metaHashes[chunk.Index] = chunk.Hash
 	}
 
 	fmt.Println("🔎 Verifying chunks for:", cmap.FileName)
@@ -36,7 +71,7 @@ func main() {
 	totalChunks := 0
 	okChunks := 0
 
-	// Loop through all chunks
+	// Verify each chunk
 	for indexStr, peer := range cmap.Chunks {
 		totalChunks++
 
@@ -53,17 +88,44 @@ func main() {
 			continue
 		}
 
-		n, _ := io.Copy(io.Discard, resp.Body)
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Printf("❌ Chunk %s: Error reading response: %v\n", indexStr, err)
+			continue
+		}
 
-		if n == 0 {
+		if len(data) == 0 {
 			fmt.Printf("❌ Chunk %s: Empty chunk received from %s\n", indexStr, peer)
 			continue
 		}
 
-		fmt.Printf("✅ Chunk %s: Found (%d bytes) from %s\n", indexStr, n, peer)
+		// Hash the downloaded chunk
+		hash := sha256.Sum256(data)
+		hashStr := hex.EncodeToString(hash[:])
+
+		// Check against meta.json
+		idx := atoi(indexStr)
+		expectedHash, ok := metaHashes[idx]
+		if !ok {
+			fmt.Printf("❌ Chunk %s: Not found in meta.json\n", indexStr)
+			continue
+		}
+
+		if hashStr != expectedHash {
+			fmt.Printf("❌ Chunk %s: Hash mismatch! Expected %s, Got %s\n", indexStr, expectedHash, hashStr)
+			continue
+		}
+
+		fmt.Printf("✅ Chunk %s: Verified (%d bytes)\n", indexStr, len(data))
 		okChunks++
 	}
 
 	fmt.Println()
 	fmt.Printf("📊 Chunk Verification Result: %d/%d Chunks OK\n", okChunks, totalChunks)
+}
+
+func atoi(s string) int {
+	var n int
+	fmt.Sscanf(s, "%d", &n)
+	return n
 }
