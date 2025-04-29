@@ -16,8 +16,9 @@ import (
 )
 
 var peers = []string{
-	"http://INSTANCE1_IP:8080",
-	"http://INSTANCE2_IP:8080",
+	"http://localhost:8080",
+	"http://34.223.225.170:8080",
+	//"http://INSTANCE2_IP:8080",
 	// Add more if needed
 }
 
