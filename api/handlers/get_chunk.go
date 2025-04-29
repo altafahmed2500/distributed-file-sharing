@@ -8,9 +8,12 @@ import (
 
 func GetChunkHandler(c *gin.Context) {
 	fileName := c.Query("fileName")
-	index := c.Query("index")
+	chunkIndex := c.Query("chunkIndex") // ✅ Must match downloader's query param
 
-	chunkPath := "chunks/" + fileName + "_chunk_" + index
+	chunkPath := "chunks/" + fileName + "_chunk_" + chunkIndex
+
+	// Optional: log for debugging
+	println("📦 Serving chunk:", chunkPath)
 
 	data, err := os.ReadFile(chunkPath)
 	if err != nil {
