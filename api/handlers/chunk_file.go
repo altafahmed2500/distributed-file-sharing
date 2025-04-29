@@ -16,12 +16,12 @@ import (
 )
 
 var peers = []string{
-	"http://localhost:8080",
+	"http://192.168.88.1:8080",
 	"http://34.223.225.170:8080",
-	//"http://INSTANCE2_IP:8080",
-	// Add more if needed
+	// Add more instances if needed
 }
 
+// ChunkFileHandler handles file upload, chunking, and distribution
 func ChunkFileHandler(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -29,7 +29,7 @@ func ChunkFileHandler(c *gin.Context) {
 		return
 	}
 
-	chunkSizeStr := c.DefaultPostForm("chunkSize", "256")
+	chunkSizeStr := c.DefaultPostForm("chunkSize", "256") // default 256 KB
 	chunkSize, _ := strconv.Atoi(chunkSizeStr)
 
 	src, err := file.Open()
@@ -39,31 +39,25 @@ func ChunkFileHandler(c *gin.Context) {
 	}
 	defer src.Close()
 
-	meta, err := chunker.ChunkFile(src, file.Filename, chunkSize*1024) // multiply KB to bytes
+	// ✅ Step 1: Chunk the file
+	meta, err := chunker.ChunkFile(src, file.Filename, chunkSize*1024) // KB -> bytes
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Save meta.json
-	metaBytes, err := json.MarshalIndent(meta, "", "  ")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal metadata"})
-		return
-	}
-
-	metaPath := "output/" + file.Filename + "/meta.json"
-	err = os.WriteFile(metaPath, metaBytes, 0644)
+	// ✅ Step 2: Save meta.json
+	err = saveMeta(file.Filename, meta)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save metadata"})
 		return
 	}
 
-	// ✅ ✅ ✅ Now, distribute chunks to different instances
+	// ✅ Step 3: Distribute chunks
 	chunkMap := make(map[int]string)
 
 	for idx, chunk := range meta.Chunks {
-		assignedPeer := peers[idx%len(peers)] // Round Robin
+		assignedPeer := peers[idx%len(peers)] // Round-robin peer assignment
 
 		chunkPath := "output/" + file.Filename + "/chunk_" + strconv.Itoa(chunk.Index)
 		chunkName := fmt.Sprintf("%s_chunk_%d", file.Filename, chunk.Index)
@@ -77,20 +71,32 @@ func ChunkFileHandler(c *gin.Context) {
 		chunkMap[chunk.Index] = assignedPeer
 	}
 
-	// Save ChunkMap
-	err = saveChunkMap(file.Filename, chunkMap)
+	// ✅ Step 4: Save chunk map properly
+	err = saveChunkMap(file.Filename, chunkMap, meta.RootHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save chunk map"})
 		return
 	}
 
+	// ✅ Final success response
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "File chunked and distributed successfully",
 		"rootHash": meta.RootHash,
 	})
 }
 
-// Upload a chunk to assigned peer
+// Save meta.json for the file
+func saveMeta(fileName string, meta chunker.FileMeta) error {
+	os.MkdirAll("output/"+fileName, os.ModePerm)
+	metaBytes, err := json.MarshalIndent(meta, "", "  ")
+	if err != nil {
+		return err
+	}
+	metaPath := "output/" + fileName + "/meta.json"
+	return os.WriteFile(metaPath, metaBytes, 0644)
+}
+
+// Upload a single chunk to assigned peer
 func uploadChunk(peerAddress, chunkPath, chunkName string) error {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -132,16 +138,21 @@ func uploadChunk(peerAddress, chunkPath, chunkName string) error {
 	return nil
 }
 
-// Save chunk map locally
-func saveChunkMap(fileName string, chunkMap map[int]string) error {
+// Save full chunk map with filename and root hash
+func saveChunkMap(fileName string, chunkMap map[int]string, rootHash string) error {
 	os.MkdirAll("chunk_maps", os.ModePerm)
-	mapFile, err := os.Create("chunk_maps/" + fileName + "_chunkmap.json")
+
+	// Full structured chunk map
+	fullMap := map[string]interface{}{
+		"FileName": fileName,
+		"RootHash": rootHash,
+		"Chunks":   chunkMap,
+	}
+
+	data, err := json.MarshalIndent(fullMap, "", "  ")
 	if err != nil {
 		return err
 	}
-	defer mapFile.Close()
 
-	data, _ := json.MarshalIndent(chunkMap, "", "  ")
-	mapFile.Write(data)
-	return nil
+	return os.WriteFile("chunk_maps/"+fileName+"_chunkmap.json", data, 0644)
 }
